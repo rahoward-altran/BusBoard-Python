@@ -1,10 +1,12 @@
 import requests
 import json
+import os
 
 def get_application_keys():
-    with open('secrets.txt') as f:
-        data = f.read().split("\n")
-    # Either substitute your API keys here or write a secrets.txt file with the ID in the first line and key in the second
+    if os.path.exists('./final_data'):
+        with open('secrets.txt') as f:
+            data = f.read().split("\n")
+    # Either substitute your transport API keys here or write a secrets.txt file with the ID in the first line and key in the second
     return {'app_id': data[0], 'app_key': data[1]}
 
 class TransportAPI:
@@ -27,7 +29,7 @@ class TransportAPI:
 class LiveBusStop:
     def __init__(self, data):
         self.data = data
-        self.buses = [Bus(bus_data) for line in data['departures'] for bus_data in data['departures'][line]]
+        self.buses = [Bus(bus_data) for line in data['departures'].values() for bus_data in line]
     
     def name(self):
         return self.data['name']
@@ -46,8 +48,11 @@ class Bus:
     def departs(self):
         return self.data['best_departure_estimate']
     
+    def destination(self):
+        return self.data['direction']
+
     def to_string(self):
-        return f"{self.departs()} - {self.line_name()}"
+        return f"{self.departs()} - {self.line_name()} towards {self.destination()}"
 
 class PostcodeAPI:
     def get_postcode(self, postcode):
