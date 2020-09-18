@@ -15,6 +15,10 @@ class BusBoard:
         self.postcode = postcode
         self.errors = []
         self.bus_stops = self.get_stops_from_postcode()
+
+    def refresh(self):
+        for stop in self.bus_stops:
+            stop.buses.clear()
         if len(self.errors) == 0:
             self.add_timetable_to_stops()
 

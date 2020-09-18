@@ -1,10 +1,15 @@
 {% extends "layout.html" %}
 {% block title %}Bus Information{% endblock %}
 {% block content %}
+<head>
+    <meta http-equiv="refresh" content="30">
+</head>
+
 <div class="container body-content">
     <h2>Bus Information</h2>
     <div>
         <p>You entered postcode <span>{{ bus_board.postcode }}</span></p>
+        {{bus_board.refresh()}}
         {% if bus_board.num_errors() == 0 %}
             {% for bus_stop in bus_board.bus_stops %}
                 <div> Bus Stop: {{bus_stop.name}}</div>
