@@ -18,8 +18,11 @@ class BusStop:
             for bus in bus_info:
                 est_date = bus['expected_departure_date']
                 est_time = bus['best_departure_estimate']
-                departure_time = datetime.strptime(est_date + " " + est_time, "%Y-%m-%d %H:%M")
-                self.buses.append(Bus(bus['line'], departure_time))
+                try:
+                    departure_time = datetime.strptime(est_date + " " + est_time, "%Y-%m-%d %H:%M")
+                    self.buses.append(Bus(bus['line'], departure_time))
+                except:
+                    pass
 
     def sort_buses(self):
         self.buses.sort(key=lambda bus: bus.departure_time)

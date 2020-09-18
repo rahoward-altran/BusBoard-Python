@@ -4,7 +4,24 @@
 <div class="container body-content">
     <h2>Bus Information</h2>
     <div>
-        <p>You entered postcode <span>{{ postcode }}</span></p>
+        <p>You entered postcode <span>{{ bus_board.postcode }}</span></p>
+        {% if bus_board.num_errors() == 0 %}
+            {% for bus_stop in bus_board.bus_stops %}
+                <div> Bus Stop: {{bus_stop.name}}</div>
+                {%for bus in bus_stop.buses%}
+                <ul>
+                    <li> {{bus.__str__()}} </li>
+                </ul>
+                {%endfor%}
+            {%endfor%}
+        {% else %}
+            <div>Errors</div>
+            {% for error in bus_board.errors %}
+            <ul>
+                <li> {{error}} </li>
+            </ul>
+            {%endfor%}
+        {% endif %}
     </div>
 </div>
 {% endblock %}
