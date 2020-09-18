@@ -1,61 +1,52 @@
 import requests
-import json
 import ast
-from typing import List, Type
-from _datetime import datetime
+from Timetable import Timetable
 
-
-class Bus:
-
-    def __init__(self, time: datetime):
-        #self.number = line
-        self.departure_time = time
-
-
-class TimeTable:
-    # buses: List[Bus]
-
-    def __init__(self):
-        self.buses = []
-
-    # all_buses: List[Bus]
-#-------------------------------------------------------
-
+GET_STOP_CODE_REQUEST = "https://transportapi.com/v3/uk/bus/stops/near.json?app_id=e1420c74&app_key=11fcf40bd3749dfe5bd2de752e3a7294&lat=%s&lon=%s"
 
 def main():
-    print("Welcome to BusBoard.")
-    # user_input = input("Please give a buss stop code: ")
 
-    # ToDo DESIGN: request userinputed bus stop info from api
-    #response = requests.get('https://transportapi.com/v3/uk/bus/stop/'+user_input+'/live.json?app_id=af190c09&app_key=ff4d33b5a814fbe2ee7ba49fd63312cb&group=route&nextbuses=yes')
-    response = requests.get('https://transportapi.com/v3/uk/bus/stop/490000077D/live.json?app_id=af190c09&app_key=ff4d33b5a814fbe2ee7ba49fd63312cb&group=route&nextbuses=yes')
+    # get_stop_from_postcode()
+
+    print("Welcome to BusBoard.")
+    response = get_next_buses()
+
+    # #490000077D
+    text = response.content.decode("utf-8")
+
     dict = ast.literal_eval(response.content.decode("utf-8"))
 
-    timetable: Type[TimeTable] = TimeTable()
-
-    # ToDo DESIGN interpret the json response
     departures = dict['departures']
-    for bus_route_name, bus_info in departures.items():
-        for bus in bus_info:
-            # ToDo:
-            est_date = bus['expected_departure_date']
-            est_time = bus['best_departure_estimate']
-            departure_time = datetime.strptime(est_date + " " + est_time, "%Y-%m-%d %H:%M")
-            print(departure_time)
-            number = bus['line']
-            print(number)
-            #new_bus = Bus(number, departure_time)
-            new_bus = Bus(departure_time)
-            timetable.buses.append(new_bus)
+    timetable = Timetable(departures)
 
-    print(timetable.buses)
-    #ToDo CODE sort through the list of type Bus by departure time
-    # all_buses.sort(key=lambda bus : bus['best_departure_estimate'])
-    # for bus in all_buses:
-    #     print(bus['best_departure_estimate'])
+    timetable.sort_buses()
+    timetable.print_first_five()
 
 
-    # ToDo DESIGN print out the next 5 busses at the stop
+def get_stop_from_postcode():
+    postcode = "se249nw"
+
+    response = requests.get("http://api.postcodes.io/postcodes/%s" % postcode)
+
+    text = response.text
+    response_decoded = ast.literal_eval(text)
+    result = response_decoded["result"]
 
 
-if __name__ == "__main__": main()
+    bus_stop_respose = requests.get(GET_STOP_CODE_REQUEST & (result["latitude"], result["longitude"]))
+
+    nearest_stop = ast.literal_eval(bus_stop_respose.content.decode("utf-8"))["stops"][0]["atcocode"]
+    return nearest_stop
+
+
+def get_next_buses():
+    user_input = input("Please give a buss stop code: ")
+    response = requests.get(
+        'https://transportapi.com/v3/uk/bus/stop/%s/live.json?app_id=af190c09&app_key=ff4d33b5a814fbe2ee7ba49fd63312cb&group=route&nextbuses=yes' % user_input)
+    if not response.ok:
+        get_next_buses()
+    return response
+
+
+if __name__ == "__main__":
+    main()
