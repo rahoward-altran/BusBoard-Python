@@ -1,13 +1,12 @@
 import requests
-import ast
 import json
 
 from BusStop import BusStop
-from Timetable import Timetable
 
-NEAREST_BUSES_REQUEST = 'https://transportapi.com/v3/uk/bus/stop/%s/live.json?app_id=af190c09&app_key=ff4d33b5a814fbe2ee7ba49fd63312cb&group=route&nextbuses=yes'
-GET_STOP_CODE_REQUEST = "https://transportapi.com/v3/uk/bus/stops/near.json?app_id=e1420c74&app_key=11fcf40bd3749dfe5bd2de752e3a7294&lat=%s&lon=%s"
+NEAREST_BUSES_REQUEST = 'https://transportapi.com/v3/uk/bus/stop/%s/live.json?app_id=%s&app_key=%s&group=route&nextbuses=yes'
+GET_STOP_CODE_REQUEST = "https://transportapi.com/v3/uk/bus/stops/near.json?app_id=%s&app_key=%s&lat=%f&lon=%f"
 POSTCODES_REQUEST = "http://api.postcodes.io/postcodes/%s"
+
 
 def main():
     print("Welcome to BusBoard.")
@@ -36,9 +35,17 @@ def get_stops_from_postcode():
 
 
 def get_bus_stop_data_from_location(location_info):
-    bus_stop_response = requests.get(GET_STOP_CODE_REQUEST % (str(location_info["latitude"]),
-                                                              str(location_info["longitude"])))
-    return ast.literal_eval(bus_stop_response.text)["stops"]
+    app_key, app_id = get_key_and_id()
+    bus_stop_response = requests.get(
+        GET_STOP_CODE_REQUEST % (app_id, app_key, location_info["latitude"], location_info["longitude"]))
+    bus_stop_dict = json.loads(bus_stop_response.text)
+    return bus_stop_dict["stops"]
+
+
+def get_key_and_id():
+    with open("keys/keys.json") as json_file:
+        json_data = json.load(json_file)
+        return json_data["app_key"], json_data["app_id"]
 
 
 def get_location_info_from_postcode():
@@ -46,27 +53,26 @@ def get_location_info_from_postcode():
     while get_user_input:
         postcode_input = input("Please enter a postcode: ")
 
-        postcode_response = requests.get(POSTCODES_REQUEST % postcode_input)
+        postcode_response = requests.get(POSTCODES_REQUEST % (postcode_input))
 
         get_user_input = not postcode_response.ok
 
-    postcode_json_string = postcode_response.text.replace("'", "\"")
-    postcode_dict = json.loads(postcode_json_string)
+    postcode_dict = json.loads(postcode_response.text)
     return postcode_dict["result"]
 
 
 def get_next_buses(stop_code):
-    response = requests.get(NEAREST_BUSES_REQUEST % stop_code)
+    app_key, app_id = get_key_and_id()
+    response = requests.get(NEAREST_BUSES_REQUEST % (stop_code, app_id, app_key))
     return response
 
 
 def add_timetable_to_stops(stops):
     for stop in stops:
         response = get_next_buses(stop.atcocode)
-        next_buses_dict = ast.literal_eval(response.text)
+        next_buses_dict = json.loads(response.text)
 
-        departures = next_buses_dict['departures']
-        stop.timetable = Timetable(stop.name, departures)
+        stop.populate_buses(next_buses_dict["departures"])
 
 
 def print_stops(stops):
