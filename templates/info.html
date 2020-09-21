@@ -7,17 +7,33 @@
 
 <div class="container body-content">
     <h2>Bus Information</h2>
+    <br/>
+    <div>
+        <form id="messageForm" action="/busInfo" method="get">
+            <fieldset>
+                <legend>Postcode:
+                    <span>
+                        <input type="text" name="postcode" field="*{{ bus_board.postcode }}">
+                        <input type="submit" value="Get Bus Info" />
+                    </span>
+                </legend>
+            </fieldset>
+        </form>
+    </div>
+    <br/>
+
     <div>
         <p>You entered postcode <span>{{ bus_board.postcode }}</span></p>
         {% if bus_board.num_errors() == 0 %}
             {{bus_board.refresh()}}
             {% for bus_stop in bus_board.bus_stops %}
-                <div> Bus Stop: {{bus_stop.name}}</div>
+                <div><h4>Bus Stop: {{bus_stop.name}}</h4></div>
                 {%for bus in bus_stop.buses%}
                 <ul>
                     <li> {{bus.__str__()}} </li>
                 </ul>
                 {%endfor%}
+                <br/>
             {%endfor%}
         {% else %}
             <div>Errors</div>
@@ -28,15 +44,6 @@
             {%endfor%}
         {% endif %}
     </div>
-</div>
-<div>
-    <form id="messageForm" action="/busInfo" method="get">
-    <fieldset>
-        <legend>Postcode: </legend>
-        <input type="text" name="postcode">
-        <input type="submit" value="Get Bus Info" />
-    </fieldset>
-</form>
 </div>
 
 {% endblock %}

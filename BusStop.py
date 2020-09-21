@@ -6,7 +6,7 @@ from Bus import Bus
 class BusStop:
     def __init__(self, stop_dictionary):
         self.atcocode = stop_dictionary["atcocode"]
-        self.name = stop_dictionary["name"] + " " + stop_dictionary["indicator"]
+        self.name = stop_dictionary["name"] + ", " + stop_dictionary["indicator"]
         self.buses = []
 
     def print_timetable(self):
