@@ -21,16 +21,17 @@ class BusBoard:
             stop.buses.clear()
         if len(self.errors) == 0:
             self.add_timetable_to_stops()
+        return ""
 
     def get_stops_from_postcode(self):
         try:
             location_info = self.get_location_info_from_postcode()
-        except:
+        except ValueError:
             self.errors.append("Postcode: %s is not valid." % self.postcode)
             return
         try:
             bus_stop_data = self.get_bus_stop_data_from_location(location_info)
-        except:
+        except ValueError:
             self.errors.append("Could not get bus stop data from %s." % self.postcode)
             return
         stops = []
@@ -47,6 +48,8 @@ class BusBoard:
         bus_stop_response = requests.get(
             GET_STOP_CODE_REQUEST % (self.app_id, self.app_key, location_info["latitude"], location_info["longitude"]))
         bus_stop_dict = json.loads(bus_stop_response.text)
+        if not bus_stop_response.ok:
+            raise ValueError
         return bus_stop_dict["stops"]
 
     @staticmethod
@@ -58,6 +61,9 @@ class BusBoard:
     def get_location_info_from_postcode(self):
         postcode_response = requests.get(POSTCODES_REQUEST % self.postcode)
         postcode_dict = json.loads(postcode_response.text)
+        if not postcode_response.ok:
+            raise ValueError
+
         return postcode_dict["result"]
 
     def get_next_buses(self, stop_code):
@@ -66,9 +72,14 @@ class BusBoard:
 
     def add_timetable_to_stops(self):
         for stop in self.bus_stops:
-            response = self.get_next_buses(stop.atcocode)
-            next_buses_dict = json.loads(response.text)
-            stop.populate_buses(next_buses_dict["departures"])
+            try:
+                response = self.get_next_buses(stop.atcocode)
+                next_buses_dict = json.loads(response.text)
+                stop.populate_buses(next_buses_dict["departures"])
+                if not response.ok:
+                    raise ValueError
+            except ValueError:
+                self.errors.append("Could not get bus data from bus code.")
 
     def num_errors(self):
         return len(self.errors)
