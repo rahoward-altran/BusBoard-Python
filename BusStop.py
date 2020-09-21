@@ -23,12 +23,23 @@ class BusStop:
                 est_date = bus['expected_departure_date']
                 est_time = bus['best_departure_estimate']
                 aim_time = bus['aimed_departure_time']
-                try:
-                    departure_time = datetime.strptime(est_date + " " + est_time, "%Y-%m-%d %H:%M")
-                    aim = datetime.strptime(est_date + " " + aim_time, "%Y-%m-%d %H:%M")
-                    self.buses.append(Bus(bus['line'], aim, departure_time))
-                except:
-                    pass
+
+                if est_date is None:
+                    est_date = bus['date']
+                if est_time is None:
+                    est_time = bus['expected_departure_estimate']
+                departure_time = self.create_datetime_if_valid(est_date, est_time)
+                aim_time = self.create_datetime_if_valid(est_date, aim_time)
+                
+                self.buses.append(Bus(bus['line'], aim_time, departure_time))
+
+    @staticmethod
+    def create_datetime_if_valid(date, time):
+        try:
+            time = datetime.strptime(date + " " + time, "%Y-%m-%d %H:%M")
+        except TypeError:
+            time = "Not found"
+        return time
 
     def sort_buses(self):
         self.buses.sort(key=lambda bus: bus.departure_time)

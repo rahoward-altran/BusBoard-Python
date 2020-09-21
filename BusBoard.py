@@ -5,7 +5,7 @@ from BusStop import BusStop
 NEAREST_BUSES_REQUEST = 'https://transportapi.com/v3/uk/bus/stop/%s/live.json?app_id=%s' \
                         '&app_key=%s&group=route&nextbuses=yes'
 GET_STOP_CODE_REQUEST = "https://transportapi.com/v3/uk/bus/stops/near.json?app_id=%s&app_key=%s&lat=%f&lon=%f"
-POSTCODES_REQUEST = "http://api.postcodes.io/postcodes/%s"
+POSTCODES_REQUEST = "https://api.postcodes.io/postcodes/%s"
 NUM_STOPS_TO_DISPLAY = 2
 
 
@@ -27,12 +27,12 @@ class BusBoard:
         try:
             location_info = self.get_location_info_from_postcode()
         except ValueError:
-            self.errors.append("Postcode: %s is not valid." % self.postcode)
+            self.errors.append("Could not get user location from postcode: \"%s\"." % self.postcode)
             return
         try:
             bus_stop_data = self.get_bus_stop_data_from_location(location_info)
         except ValueError:
-            self.errors.append("Could not get bus stop data from %s." % self.postcode)
+            self.errors.append("Could not get bus stop data from \"%s\"." % self.postcode)
             return
         stops = []
         stop_count = 0
