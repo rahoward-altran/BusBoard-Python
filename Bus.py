@@ -7,6 +7,10 @@ class Bus:
         self.number = line
         self.departure_time = time
         self.aim_time = aim
+        if type(self.departure_time) is datetime:
+            self.mins_to_departure = int((self.departure_time - datetime.now()).total_seconds() / 60.0)
+        else:
+            self.mins_to_departure = "N/A"
 
     def __str__(self):
         return "Number: %s. Time: %s. Aim time: %s." % (self.number, self.get_departure_time(), self.get_aim_time())

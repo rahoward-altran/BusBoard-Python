@@ -14,12 +14,8 @@ class BusStop:
         self.print_first_five()
 
     def populate_buses(self, departures):
-        count = 0
         for bus_route_name, bus_info in departures.items():
             for bus in bus_info:
-                if count == 5:
-                    break
-                count += 1
                 est_date = bus['expected_departure_date']
                 est_time = bus['best_departure_estimate']
                 aim_time = bus['aimed_departure_time']
@@ -32,6 +28,8 @@ class BusStop:
                 aim_time = self.create_datetime_if_valid(est_date, aim_time)
                 
                 self.buses.append(Bus(bus['line'], aim_time, departure_time))
+        self.sort_buses()
+        del self.buses[5:len(self.buses)]
 
     @staticmethod
     def create_datetime_if_valid(date, time):

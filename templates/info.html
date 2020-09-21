@@ -1,9 +1,40 @@
 {% extends "layout.html" %}
 {% block title %}Bus Information{% endblock %}
 {% block content %}
-<!--<head>-->
+<head>
     <!--<meta http-equiv="refresh" content="30">-->
-<!--</head>-->
+    <style>
+    .collapsible {
+      background-color: #777;
+      color: white;
+      cursor: pointer;
+      padding: 18px;
+      width: 100%;
+      border: none;
+      text-align: left;
+      outline: none;
+      font-size: 15px;
+    }
+
+    .active, .collapsible:hover {
+      background-color: #555;
+    }
+
+    .content {
+      padding: 0 18px;
+      display: none;
+      overflow: hidden;
+      background-color: #f1f1f1;
+    }
+
+    table, th, td {
+        border: 1px solid black;
+        border-collapse: collapse;
+        padding: 8px
+    }
+    </style>
+</head>
+
 
 <div class="container body-content">
     <h2>Bus Information</h2>
@@ -27,12 +58,25 @@
         {% if bus_board.num_errors() == 0 %}
             {{bus_board.refresh()}}
             {% for bus_stop in bus_board.bus_stops %}
-                <div><h4>Bus Stop: {{bus_stop.name}}</h4></div>
-                {%for bus in bus_stop.buses%}
-                <ul>
-                    <li> {{bus.__str__()}} </li>
-                </ul>
-                {%endfor%}
+                <button type="button" class="collapsible">Bus Stop: {{bus_stop.name}}</button>
+                <div class="content">
+                    <table>
+                        <tr>
+                            <th>Route</th>
+                            <th>Mins to departure</th>
+                            <th>Estimated departure time</th>
+                            <th>(Aimed departure time)</th>
+                        </tr>
+                    {%for bus in bus_stop.buses%}
+                        <tr>
+                            <td>{{bus.number}}</td>
+                            <td>{{bus.mins_to_departure}}</td>
+                            <td>{{bus.get_departure_time()}}</td>
+                            <td>({{bus.get_aim_time()}})</td>
+                        </tr>
+                    {%endfor%}
+                    </table>
+                </div>
                 <br/>
             {%endfor%}
         {% else %}
@@ -45,5 +89,22 @@
         {% endif %}
     </div>
 </div>
+
+<script>
+var coll = document.getElementsByClassName("collapsible");
+var i;
+
+for (i = 0; i < coll.length; i++) {
+  coll[i].addEventListener("click", function() {
+    this.classList.toggle("active");
+    var content = this.nextElementSibling;
+    if (content.style.display === "block") {
+      content.style.display = "none";
+    } else {
+      content.style.display = "block";
+    }
+  });
+}
+</script>
 
 {% endblock %}
