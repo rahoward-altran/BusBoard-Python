@@ -2,15 +2,14 @@ import requests
 import json
 from BusStop import BusStop
 
-NEAREST_BUSES_REQUEST = 'https://transportapi.com/v3/uk/bus/stop/%s/live.json?app_id=%s' \
-                        '&app_key=%s&group=route&nextbuses=yes'
-GET_STOP_CODE_REQUEST = "https://transportapi.com/v3/uk/bus/stops/near.json?app_id=%s&app_key=%s&lat=%f&lon=%f"
+NEAREST_BUSES_REQUEST = 'https://transportapi.com/v3/uk/bus/stop/%s/live.json'
+GET_STOP_CODE_REQUEST = "https://transportapi.com/v3/uk/bus/stops/near.json"
 POSTCODES_REQUEST = "https://api.postcodes.io/postcodes/%s"
-NUM_STOPS_TO_DISPLAY = 2
 
 
 class BusBoard:
-    def __init__(self, postcode):
+    def __init__(self, postcode, max_distance):
+        self.max_distance = int(max_distance)
         self.app_key, self.app_id = self.get_key_and_id()
         self.postcode = postcode
         self.errors = []
@@ -34,19 +33,19 @@ class BusBoard:
         except ValueError:
             self.errors.append("Could not get bus stop data from \"%s\"." % self.postcode)
             return
-        stops = []
-        stop_count = 0
 
+        stops = []
         for stop in bus_stop_data:
-            stops.append(BusStop(stop))
-            stop_count += 1
-            if stop_count == NUM_STOPS_TO_DISPLAY:
+            if int(stop["distance"]) > self.max_distance:
                 break
+            stops.append(BusStop(stop))
         return stops
 
     def get_bus_stop_data_from_location(self, location_info):
-        bus_stop_response = requests.get(
-            GET_STOP_CODE_REQUEST % (self.app_id, self.app_key, location_info["latitude"], location_info["longitude"]))
+        bus_stop_response = requests.get(GET_STOP_CODE_REQUEST, params={'api_key': self.app_key, 'app_id': self.app_id,
+                                                                        'lat': location_info["latitude"],
+                                                                        'lon': location_info["longitude"]})
+
         bus_stop_dict = json.loads(bus_stop_response.text)
         if not bus_stop_response.ok:
             raise ValueError
@@ -67,7 +66,9 @@ class BusBoard:
         return postcode_dict["result"]
 
     def get_next_buses(self, stop_code):
-        response = requests.get(NEAREST_BUSES_REQUEST % (stop_code, self.app_id, self.app_key))
+        response = requests.get(NEAREST_BUSES_REQUEST % stop_code, params={'nextbuses': 'yes', 'group': 'route',
+                                                                           'app_id': self.app_id,
+                                                                           'app_key': self.app_key})
         return response
 
     def add_timetable_to_stops(self):

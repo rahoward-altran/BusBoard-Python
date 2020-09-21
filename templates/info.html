@@ -35,19 +35,16 @@
     </style>
 </head>
 
-
 <div class="container body-content">
     <h2>Bus Information</h2>
     <br/>
     <div>
         <form id="messageForm" action="/busInfo" method="get">
             <fieldset>
-                <legend>Postcode:
-                    <span>
-                        <input type="text" name="postcode" field="*{{ bus_board.postcode }}">
-                        <input type="submit" value="Get Bus Info" />
-                    </span>
-                </legend>
+                <p>Postcode: <input required type="text" name="postcode" value='{{ bus_board.postcode }}'>
+                Max distance (m):<input required type="number" step="50" min="0" name="distance" value='{{ bus_board.max_distance }}'>
+                <input type="submit" value="Get Bus Info" />
+                </p>
             </fieldset>
         </form>
     </div>

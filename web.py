@@ -12,7 +12,8 @@ def index():
 @app.route("/busInfo")
 def busInfo():
     postcode = request.args.get('postcode')
-    bus_board = BusBoard(postcode)
+    max_distance = request.args.get('distance')
+    bus_board = BusBoard(postcode, max_distance)
     return render_template('info.html', bus_board=bus_board)
 
 

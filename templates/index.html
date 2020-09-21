@@ -10,9 +10,10 @@
         <div class="col-md-12">
             <form id="messageForm" action="/busInfo" method="get">
                 <fieldset>
-                    <legend>Postcode: </legend>
-                    <input type="text" name="postcode">
+                    <p>Postcode: <input required type="text" name="postcode">
+                    Max distance (m):<input required type="number" step="50" min="0" name="distance" value="200">
                     <input type="submit" value="Get Bus Info" />
+                    </p>
                 </fieldset>
             </form>
         </div>

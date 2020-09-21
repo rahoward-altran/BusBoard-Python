@@ -8,6 +8,7 @@ class BusStop:
         self.atcocode = stop_dictionary["atcocode"]
         self.name = stop_dictionary["name"] + ", " + stop_dictionary["indicator"]
         self.buses = []
+        self.distance = stop_dictionary["distance"]
 
     def print_timetable(self):
         print(self.name)
